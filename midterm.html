@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Animal Operations</title>
+
+  <style>
+    html,
+    body,
+    #viewDiv {
+      padding: 				0;
+      margin: 				0;
+      height: 				100%;
+      width: 				100%;
+    }
+	
+	#title{
+		position: 			absolute;
+		left: 				80px;
+		top:				10px;
+		width:				200px;
+		height:				40px;
+		padding: 			5px;
+		background-color:	#336600;
+		color:				#FFFFFF;
+		z-index:			1000;
+		font-family:		Arial;
+		font-size:			14px;
+		font-weight:		bold;
+		text-align:			center;
+		border:				2px solid #555555;
+	}
+	
+	#footer{
+		position: 			absolute;
+		left: 				10px;
+		bottom:				30px;
+		width:				300px;
+		height:				25px;
+		padding: 			5px;
+		background-color:	#336600;
+		color:				#FFFFFF;
+		z-index:			1000;
+		font-family:		Arial;
+		font-size:			12px;
+		font-weight:		normal;
+		text-align:			center;
+		border:				2px solid #555555;
+	}
+	
+
+  </style>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.0/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.0/"></script>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/PopupTemplate",
+	  "esri/layers/MapImageLayer",
+	  "esri/layers/FeatureLayer",
+	  "esri/widgets/BasemapToggle",
+      "esri/widgets/Legend",
+	  "esri/views/MapView",
+      "dojo/domReady!"
+    ],function(
+      Map,
+      PopupTemplate,
+      MapImageLayer,
+	  FeatureLayer,
+	  Legend,
+	  BasemapToggle,
+      MapView
+    ) {
+
+      //CODE FOR ADDING MAP SERVICE TO APPLICATION
+	  var WindDirection = new MapImageLayer("http://54.163.227.130:6080/arcgis/rest/services/GTKWebGIS/wind_direction/MapServer");
+	  
+	  //CODE FOR ADDING TILE MAP SERVICE TO APPLICATION
+	  var WindSpeed = new MapImageLayer("http://54.163.227.130:6080/arcgis/rest/services/GTKWebGIS/wind_speed/MapServer");
+	  // Makes the layer 25% transparent
+	  WindSpeed.opacity = 0.25;
+
+	  //DEFINE A MAP
+      var map = new Map({
+        basemap: "topo",
+		layers: [WindDirection,WindSpeed]
+      });
+
+      //CREATE A MAPVIEW
+      var view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [-110, 40],
+        zoom: 3
+      });
+
+      //PROVIDE BASIC INFORMATION POPUP FOR FEATURE LAYERS
+      var template = new PopupTemplate({
+        title: "Animal Operation",
+        content: "<p>State: {state}</p><p>Type: {type}</p><p>Zip Code: {zip}</p>"
+      });
+	
+      //CODE TO ADD FEATURE LAYERS TO APPLICATIONS
+      AnimalOperationLayer0 = new FeatureLayer({
+        url: "http://54.163.227.130:6080/arcgis/rest/services/GTKWebGIS/animal_operations/FeatureServer/0",
+        outFields: ["*"],
+        popupTemplate: template
+      });
+      map.add(AnimalOperationLayer0);
+	  AnimalOperationLayer1 = new FeatureLayer({
+        url: "http://54.163.227.130:6080/arcgis/rest/services/GTKWebGIS/animal_operations/FeatureServer/1",
+        outFields: ["*"],
+        popupTemplate: template
+      });
+      map.add(AnimalOperationLayer1);
+	  
+	  //WIDGET FUNCTIONALITY TO TOGGLE BASEMAP  
+	  var toggle = new BasemapToggle({
+	    view: view, 
+	    nextBasemap: "hybrid" 
+	  });
+      toggle.startup();
+      view.ui.add(toggle, "top-right");
+	  
+	  //WIDGET FUNCTIONALITY FOR LEGEND
+	  var legend = new Legend({
+            view: view,
+            layerInfos: [{
+              layer: AnimalOperationLayer0,
+              title: "Animal Operations"
+            },
+			{
+			  layer: AnimalOperationLayer1,
+              title: "Animal Operations"
+			}]
+       });
+       view.ui.add(legend, "bottom-right");
+	  
+    });
+  </script>
+</head>
+
+<body>
+  <div id="title">Animal Operations Map<br />With Wind Direction Symbol</div>
+  <div id="viewDiv"></div>
+  <div id="footer">Click on Animal Operation for more information.</div>
+</body>
+
+</html>
